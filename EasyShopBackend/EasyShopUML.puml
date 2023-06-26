@@ -1,0 +1,344 @@
+@startuml
+abstract class org.yearup.data.mysql.MySqlDaoBase {
+- DataSource dataSource
+# Connection getConnection()
+}
+class org.yearup.models.authentication.LoginDto {
+- String username
+- String password
++ String getUsername()
++ void setUsername(String)
++ String getPassword()
++ void setPassword(String)
++ String toString()
+}
+class org.yearup.controllers.CategoriesController {
+- CategoryDao categoryDao
+- ProductDao productDao
++ List<Category> getAll()
++ Category getById(int)
++ List<Product> getProductsById(int)
++ Category addCategory(Category)
++ void updateCategory(int,Category)
++ void deleteCategory(int)
+}
+class org.yearup.models.authentication.LoginResponseDto {
+- String token
+- User user
+~ String getToken()
+~ void setToken(String)
++ User getUser()
++ void setUser(User)
+}
+class org.yearup.security.jwt.JWTFilter {
+- {static} Logger LOG
++ {static} String AUTHORIZATION_HEADER
+- TokenProvider tokenProvider
++ void doFilter(ServletRequest,ServletResponse,FilterChain)
+- String resolveToken(HttpServletRequest)
+}
+class org.yearup.controllers.ShoppingCartController {
+- ShoppingCartDao shoppingCartDao
+- UserDao userDao
+- ProductDao productDao
++ ShoppingCart getCart(Principal)
+}
+class org.yearup.controllers.AuthenticationController {
+- TokenProvider tokenProvider
+- AuthenticationManagerBuilder authenticationManagerBuilder
+- UserDao userDao
+- ProfileDao profileDao
++ ResponseEntity<LoginResponseDto> login(LoginDto)
++ ResponseEntity<User> register(RegisterUserDto)
+}
+class org.yearup.data.mysql.MySqlUserDao {
++ User create(User)
++ List<User> getAll()
++ User getUserById(int)
++ User getByUserName(String)
++ int getIdByUsername(String)
++ boolean exists(String)
+- User mapRow(ResultSet)
+}
+class org.yearup.security.WebSecurityConfig {
+- TokenProvider tokenProvider
+- JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint
+- JwtAccessDeniedHandler jwtAccessDeniedHandler
+- UserModelDetailsService userModelDetailsService
++ PasswordEncoder passwordEncoder()
++ void configure(WebSecurity)
+# void configure(HttpSecurity)
+- JWTConfigurer securityConfigurerAdapter()
+}
+class org.yearup.security.SecurityUtils {
+- {static} Logger LOG
++ {static} Optional<String> getCurrentUsername()
+}
+class org.yearup.security.jwt.JWTConfigurer {
+- TokenProvider tokenProvider
++ void configure(HttpSecurity)
+}
+class org.yearup.models.Category {
+- int categoryId
+- String name
+- String description
++ int getCategoryId()
++ void setCategoryId(int)
++ String getName()
++ void setName(String)
++ String getDescription()
++ void setDescription(String)
+}
+class org.yearup.EasyshopApplication {
++ {static} void main(String[])
+}
+interface org.yearup.data.CategoryDao {
+~ List<Category> getAllCategories()
+~ Category getById(int)
+~ Category create(Category)
+~ void update(int,Category)
+~ void delete(int)
+}
+interface org.yearup.data.ProductDao {
+~ List<Product> search(Integer,BigDecimal,BigDecimal,String)
+~ List<Product> listByCategoryId(int)
+~ Product getById(int)
+~ Product create(Product)
+~ void update(int,Product)
+~ void delete(int)
+}
+class org.yearup.data.mysql.MySqlProductDaoTest {
+- MySqlProductDao dao
++ void setup()
++ void getById_shouldReturn_theCorrectProduct()
+}
+class org.yearup.security.JwtAuthenticationEntryPoint {
++ void commence(HttpServletRequest,HttpServletResponse,AuthenticationException)
+}
+class org.yearup.models.authentication.Authority {
+- String name
++ String getName()
++ void setName(String)
++ boolean equals(Object)
++ int hashCode()
++ String toString()
+}
+class org.yearup.security.jwt.TokenProvider {
+- Logger logger
+- {static} String AUTHORITIES_KEY
+- String secret
+- long tokenTimeout
+- Key key
++ void afterPropertiesSet()
++ String createToken(Authentication,boolean)
++ Authentication getAuthentication(String)
++ boolean validateToken(String)
+}
+class org.yearup.security.UserNotActivatedException {
+- {static} long serialVersionUID
+}
+class org.yearup.security.UserModelDetailsService {
+- Logger log
+- UserDao userDao
++ UserDetails loadUserByUsername(String)
+- org.springframework.security.core.userdetails.User createSpringSecurityUser(String,User)
+}
+class org.yearup.models.Profile {
+- int userId
+- String firstName
+- String lastName
+- String phone
+- String email
+- String address
+- String city
+- String state
+- String zip
++ int getUserId()
++ void setUserId(int)
++ String getFirstName()
++ void setFirstName(String)
++ String getLastName()
++ void setLastName(String)
++ String getPhone()
++ void setPhone(String)
++ String getEmail()
++ void setEmail(String)
++ String getAddress()
++ void setAddress(String)
++ String getCity()
++ void setCity(String)
++ String getState()
++ void setState(String)
++ String getZip()
++ void setZip(String)
+}
+class org.yearup.data.mysql.MySqlProductDao {
++ List<Product> search(Integer,BigDecimal,BigDecimal,String)
++ List<Product> listByCategoryId(int)
++ Product getById(int)
++ Product create(Product)
++ void update(int,Product)
++ void delete(int)
+# {static} Product mapRow(ResultSet)
+}
+class org.yearup.data.mysql.MySqlProfileDao {
++ Profile create(Profile)
+}
+class org.yearup.models.authentication.RegisterUserDto {
+- String username
+- String password
+- String confirmPassword
+- String role
++ String getUsername()
++ void setUsername(String)
++ String getPassword()
++ void setPassword(String)
++ String getConfirmPassword()
++ void setConfirmPassword(String)
++ String getRole()
++ void setRole(String)
+}
+class org.yearup.models.ShoppingCart {
+- Map<Integer,ShoppingCartItem> items
++ Map<Integer,ShoppingCartItem> getItems()
++ void setItems(Map<Integer,ShoppingCartItem>)
++ boolean contains(int)
++ void add(ShoppingCartItem)
++ ShoppingCartItem get(int)
++ BigDecimal getTotal()
+}
+interface org.yearup.data.ProfileDao {
+~ Profile create(Profile)
+}
+interface org.yearup.data.ShoppingCartDao {
+~ ShoppingCart getByUserId(int)
+}
+class org.yearup.configurations.DatabaseConfig {
+- BasicDataSource basicDataSource
++ BasicDataSource dataSource()
+}
+class org.yearup.models.Product {
+- int productId
+- String name
+- BigDecimal price
+- int categoryId
+- String description
+- String color
+- int stock
+- boolean isFeatured
+- String imageUrl
++ int getProductId()
++ void setProductId(int)
++ String getName()
++ void setName(String)
++ BigDecimal getPrice()
++ void setPrice(BigDecimal)
++ int getCategoryId()
++ void setCategoryId(int)
++ String getDescription()
++ void setDescription(String)
++ String getColor()
++ void setColor(String)
++ int getStock()
++ void setStock(int)
++ boolean isFeatured()
++ void setFeatured(boolean)
++ String getImageUrl()
++ void setImageUrl(String)
+}
+class org.yearup.configuration.TestDatabaseConfig {
+- String serverUrl
+- String testDb
+- String username
+- String password
++ void setup()
++ void cleanup()
++ DataSource dataSource()
+}
+class org.yearup.data.mysql.MySqlCategoryDao {
++ List<Category> getAllCategories()
++ Category getById(int)
++ Category create(Category)
++ void update(int,Category)
++ void delete(int)
+- Category mapRow(ResultSet)
+}
+interface org.yearup.data.UserDao {
+~ List<User> getAll()
+~ User getUserById(int)
+~ User getByUserName(String)
+~ int getIdByUsername(String)
+~ User create(User)
+~ boolean exists(String)
+}
+class org.yearup.controllers.ProductsController {
+- ProductDao productDao
++ List<Product> search(Integer,BigDecimal,BigDecimal,String)
++ Product getById(int)
++ Product addProduct(Product)
++ void updateProduct(int,Product)
++ void deleteProduct(int)
+}
+abstract class org.yearup.data.mysql.BaseDaoTestClass {
+# DataSource dataSource
++ void rollback()
+}
+class org.yearup.models.ShoppingCartItem {
+- Product product
+- int quantity
+- BigDecimal discountPercent
++ Product getProduct()
++ void setProduct(Product)
++ int getQuantity()
++ void setQuantity(int)
++ BigDecimal getDiscountPercent()
++ void setDiscountPercent(BigDecimal)
++ int getProductId()
++ BigDecimal getLineTotal()
+}
+class org.yearup.security.JwtAccessDeniedHandler {
++ void handle(HttpServletRequest,HttpServletResponse,AccessDeniedException)
+}
+class org.yearup.models.User {
+- int id
+- String username
+- String password
+- boolean activated
+- Set<Authority> authorities
++ int getId()
++ void setId(int)
++ String getUsername()
++ void setUsername(String)
++ String getPassword()
++ void setPassword(String)
++ boolean isActivated()
++ void setActivated(boolean)
++ Set<Authority> getAuthorities()
++ void setAuthorities(Set<Authority>)
++ void setAuthorities(String)
++ void addRole(String)
++ boolean equals(Object)
++ int hashCode()
++ String toString()
++ String getRole()
+}
+
+
+org.springframework.web.filter.GenericFilterBean <|-- org.yearup.security.jwt.JWTFilter
+org.yearup.data.UserDao <|.. org.yearup.data.mysql.MySqlUserDao
+org.yearup.data.mysql.MySqlDaoBase <|-- org.yearup.data.mysql.MySqlUserDao
+org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter <|-- org.yearup.security.WebSecurityConfig
+org.springframework.security.config.annotation.SecurityConfigurerAdapter <|-- org.yearup.security.jwt.JWTConfigurer
+org.yearup.data.mysql.BaseDaoTestClass <|-- org.yearup.data.mysql.MySqlProductDaoTest
+org.springframework.security.web.AuthenticationEntryPoint <|.. org.yearup.security.JwtAuthenticationEntryPoint
+org.springframework.beans.factory.InitializingBean <|.. org.yearup.security.jwt.TokenProvider
+org.springframework.security.core.AuthenticationException <|-- org.yearup.security.UserNotActivatedException
+org.springframework.security.core.userdetails.UserDetailsService <|.. org.yearup.security.UserModelDetailsService
+org.yearup.data.ProductDao <|.. org.yearup.data.mysql.MySqlProductDao
+org.yearup.data.mysql.MySqlDaoBase <|-- org.yearup.data.mysql.MySqlProductDao
+org.yearup.data.ProfileDao <|.. org.yearup.data.mysql.MySqlProfileDao
+org.yearup.data.mysql.MySqlDaoBase <|-- org.yearup.data.mysql.MySqlProfileDao
+org.yearup.data.CategoryDao <|.. org.yearup.data.mysql.MySqlCategoryDao
+org.yearup.data.mysql.MySqlDaoBase <|-- org.yearup.data.mysql.MySqlCategoryDao
+org.springframework.security.web.access.AccessDeniedHandler <|.. org.yearup.security.JwtAccessDeniedHandler
+@enduml
