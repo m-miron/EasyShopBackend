@@ -17,7 +17,7 @@ import java.util.List;
 @RequestMapping("/categories")
 // add the annotation to make this controller the endpoint for the following url
 // http://localhost:8080/categories
-@CrossOrigin(origins = "http://localhost:8080")// Replace with the appropriate client URL
+@CrossOrigin()// Replace with the appropriate client URL
 public class CategoriesController
 {
     private CategoryDao categoryDao;
