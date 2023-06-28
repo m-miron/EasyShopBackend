@@ -8,6 +8,7 @@ import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
                 categories.add(category);
             }
         } catch (SQLException e){
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
         return categories;
     }
@@ -42,7 +43,6 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     @Override
     public Category getById(int categoryId)
     {
-        Category category = null;
         try(PreparedStatement statement = getConnection().prepareStatement("""
                     SELECT *
                     FROM categories
@@ -51,12 +51,12 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
             ResultSet resultSet = statement.executeQuery()) {
             statement.setInt(1, categoryId);
             if (resultSet.next()){
-                category = mapRow(resultSet);
+                return mapRow(resultSet);
             }
         } catch (SQLException e){
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        return category;
+        return null;
     }
 
     @Override
@@ -64,13 +64,14 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     {
         // create a new category
         try(PreparedStatement statement = getConnection().prepareStatement("""
-                    INSERT INTO categories (name, description) 
+                    INSERT INTO categories (name, description)
                     VALUES (?,?)
-                    """)) {
+                    """, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, category.getName());
             statement.setString(2, category.getDescription());
 
             int rowsInserted = statement.executeUpdate();
+
             if (rowsInserted > 0) {
                 ResultSet generatedKeys = statement.getGeneratedKeys();
                 if (generatedKeys.next()) {
@@ -79,7 +80,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
                 }
             }
         } catch (SQLException e){
-            e.printStackTrace();
+            throw new RuntimeException(e);
         } return category;
     }
 
@@ -88,21 +89,21 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     {
         // update category
         try (PreparedStatement statement = getConnection().prepareStatement("""
-            UPDATE categories 
-            SET name = ?, description = ? 
+            UPDATE categories
+            SET name = ?, description = ?
             WHERE category_id = ?
             """)) {
             statement.setString(1, category.getName());
             statement.setString(2, category.getDescription());
-            statement.setInt(3, categoryId);
+            statement.setInt(3, category.getCategoryId());
 
             int rowsUpdated = statement.executeUpdate();
             if (rowsUpdated <= 0) {
                 // Handle the case where no rows were updated
+                throw new RuntimeException("No rows were updated for category ID: " + category.getCategoryId());
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-            // Handle the exception appropriately
+            throw new RuntimeException(e);// Handle the exception appropriately
         }
 
     }
@@ -110,7 +111,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     @Override
     public void delete(int categoryId)
     {
-        // delete category
+        // Delete Category
         try (PreparedStatement statement = getConnection().prepareStatement("""
             DELETE FROM categories
             WHERE category_id = ?
@@ -120,9 +121,10 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
             int rowsDeleted = statement.executeUpdate();
             if (rowsDeleted <= 0) {
                 // Handle the case where no rows were deleted
+                throw new RuntimeException("No rows were deleted for category ID: " + categoryId);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
             // Handle the exception appropriately
         }
     }
