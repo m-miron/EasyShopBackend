@@ -1,6 +1,8 @@
 package org.yearup.data.mysql;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 import org.yearup.models.Product;
 import org.yearup.data.ProductDao;
 
@@ -56,7 +58,7 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
         }
         catch (SQLException e)
         {
-            throw new RuntimeException(e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error occurred while searching products.", e);
         }
 
         return products;
@@ -85,7 +87,7 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
         }
         catch (SQLException e)
         {
-            throw new RuntimeException(e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error occurred while listing products by category.", e);
         }
 
         return products;
@@ -95,24 +97,23 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
     @Override
     public Product getById(int productId)
     {
-        String sql = "SELECT * FROM products WHERE product_id = ?";
-        try (Connection connection = getConnection())
-        {
-            PreparedStatement statement = connection.prepareStatement(sql);
+        try (PreparedStatement statement = getConnection().prepareStatement("""
+            SELECT *
+            FROM products
+            WHERE product_id = ?
+            """)) {
             statement.setInt(1, productId);
 
-            ResultSet row = statement.executeQuery();
-
-            if (row.next())
-            {
-                return mapRow(row);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return mapRow(resultSet);
+                }
             }
+
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found.");
+        } catch (SQLException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error occurred while retrieving category.", e);
         }
-        catch (SQLException e)
-        {
-            throw new RuntimeException(e);
-        }
-        return null;
     }
 
     @Override
@@ -148,12 +149,11 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
                     return getById(orderId);
                 }
             }
+        } catch (SQLException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error occurred while creating product.", e);
         }
-        catch (SQLException e)
-        {
-            throw new RuntimeException(e);
-        }
-        return null;
+
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create product.");
     }
 
     @Override
@@ -183,11 +183,13 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
             statement.setBoolean(8, product.isFeatured());
             statement.setInt(9, productId);
 
-            statement.executeUpdate();
-        }
-        catch (SQLException e)
-        {
-            throw new RuntimeException(e);
+            int rowsAffected = statement.executeUpdate();
+
+            if (rowsAffected == 0) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found.");
+            }
+        } catch (SQLException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error occurred while updating product.", e);
         }
     }
 
@@ -203,11 +205,13 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setInt(1, productId);
 
-            statement.executeUpdate();
-        }
-        catch (SQLException e)
-        {
-            throw new RuntimeException(e);
+            int rowsAffected = statement.executeUpdate();
+
+            if (rowsAffected == 0) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found.");
+            }
+        } catch (SQLException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error occurred while deleting product.", e);
         }
     }
 
